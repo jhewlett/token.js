@@ -1,46 +1,34 @@
 var JSLex = JSLex || {};
 
 JSLex.Lexer = function(){
-    var _dict,
+    var _rules,
         _input;
 
-    var init = function(input, rules) {
+    var init = function(input, rulesArr) {
         _input = input;
-        prepareRules(rules);
-    }
-
-    var prepareRules = function(rules) {
-        _dict = {};
-
-        var lines = rules.split('\n');
-
-        for(var i = 0; i < lines.length; i++) {
-            var ruleParts = lines[i].split('->');
-
-            if (ruleParts.length === 2) {
-                _dict[ruleParts[0].trim()] = ruleParts[1].trim();
-            }
-        }
+        _rules = rulesArr;
     }
 
     var getNextToken = function() {
-        for(var key in _dict) {
-            var regex = new RegExp(key);
+        for(var i = 0; i < _rules.length; i++) {
+
+            var regex = _rules[i][0];
+            var value = _rules[i][1];
 
             var match = _input.search(regex);
 
             if (match === 0) {
                 _input = _input.replace(regex, '');
 
-                if (_dict[key] !== 'IGNORE') {
-                    return _dict[key];
+                if (value !== 'IGNORE') {
+                    return value;
                 } else {
                     return getNextToken();
                 }
             }
         }
 
-        throw "Invalid token: '" + _input[0] + "'";
+        throw "Invalid character: '" + _input[0] + "'";
     }
 
     var tokenize = function() {

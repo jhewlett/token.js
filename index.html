@@ -6,7 +6,16 @@
     </script>
     <script>
         var lexer = new JSLex.Lexer();
-        lexer.init('var1 := 25 - 4 + var2', '- -> MINUS \n [0-9]+ -> NUMBER \n [+] -> PLUS \n [_a-zA-Z][_a-zA-Z0-9]* -> ID \n := -> ASSIGN \n \\s+ -> IGNORE');
+        lexer.init('1 + 2',
+                [
+                    [/[0-9]+/, 'NUMBER'],
+                    [/-/ , 'MINUS' ],
+                    [/\+/, 'PLUS'],
+                    [/[_a-zA-Z][_a-zA-Z0-9]*/, 'ID'],
+                    [/:=/, 'ASSIGN'],
+                    [/\s/, 'IGNORE']
+                ]
+        );
 
         console.log(lexer.tokenize());
 
