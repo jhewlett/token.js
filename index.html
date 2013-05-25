@@ -5,19 +5,23 @@
     <script src="lexer.js">
     </script>
     <script>
+        var tokenCount = 0;
         var lexer = new JSLex.Lexer();
-        lexer.init('1 + 2',
+        lexer.init('a := 0 - 2',
                 [
+                    [/./, function() {tokenCount++;}],
+                    [/a/, function(text) {console.log('Found: ' + text);}],
                     [/[0-9]+/, 'NUMBER'],
                     [/-/ , 'MINUS' ],
                     [/\+/, 'PLUS'],
                     [/[_a-zA-Z][_a-zA-Z0-9]*/, 'ID'],
                     [/:=/, 'ASSIGN'],
-                    [/\s/, 'IGNORE']
+                    [/\s/, '']
                 ]
         );
 
         console.log(lexer.tokenize());
+        console.log(tokenCount);
 
     </script>
 </head>

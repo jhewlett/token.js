@@ -10,21 +10,42 @@ JSLex.Lexer = function(){
     }
 
     var getNextToken = function() {
+        var tempMatch;
+
         for(var i = 0; i < _rules.length; i++) {
 
             var regex = _rules[i][0];
             var value = _rules[i][1];
 
-            var match = _input.search(regex);
+            var match = regex.exec(_input);
 
-            if (match === 0) {
-                _input = _input.replace(regex, '');
+            //if it's a function that has no return value, then keep going through actions. If another rules is found that returns a value,
+            //consume the text then. Otherwise, consume it after exhausting all rules.
 
-                if (value !== 'IGNORE') {
+            //todo: cover with tests
+            //todo: don't repeat input replace so much
+
+            if (match && match.index === 0) {
+                if (typeof value === 'function') {
+                    var returnValue = value(match[0]);
+                    if (returnValue) {
+                        _input = _input.replace(match[0], '');
+                        return returnValue;
+                    } else {
+                        tempMatch = match[0];
+                    }
+                } else if (value !== '') {
+                    _input = _input.replace(match[0], '');
                     return value;
                 } else {
+                    _input = _input.replace(match[0], '');
                     return getNextToken();
                 }
+            }
+
+            if (i === _rules.length - 1 && tempMatch) {
+                _input = _input.replace(tempMatch, '');
+                return;
             }
         }
 
@@ -34,7 +55,10 @@ JSLex.Lexer = function(){
     var tokenize = function() {
         var allTokens = [];
         while (_input.length > 0) {
-            allTokens.push(getNextToken());
+            var token = getNextToken();
+            if (token) {
+                allTokens.push(token);
+            }
         }
 
         return allTokens;
