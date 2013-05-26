@@ -22,13 +22,14 @@ JSLex.Lexer = function(){
             //if it's a function that has no return value, then keep going through actions. If another rules is found that returns a value,
             //consume the text then. Otherwise, consume it after exhausting all rules.
 
-            //todo: cover with tests
+            //todo: cover with test
             //todo: don't repeat input replace so much
+            //todo: introduce a null function called ignore
 
             if (match && match.index === 0) {
                 if (typeof value === 'function') {
                     var returnValue = value(match[0]);
-                    if (returnValue) {
+                    if (returnValue !== undefined && returnValue !== null) {
                         _input = _input.replace(match[0], '');
                         return returnValue;
                     } else {
@@ -56,7 +57,7 @@ JSLex.Lexer = function(){
         var allTokens = [];
         while (_input.length > 0) {
             var token = getNextToken();
-            if (token) {
+            if (token !== undefined && token !== null) {
                 allTokens.push(token);
             }
         }
@@ -64,9 +65,12 @@ JSLex.Lexer = function(){
         return allTokens;
     }
 
+    var ignore = function() {}
+
     return {
         init: init,
         getNextToken: getNextToken,
-        tokenize: tokenize
+        tokenize: tokenize,
+        ignore: ignore
     };
 }
