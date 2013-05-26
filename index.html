@@ -2,26 +2,24 @@
 <html>
 <head>
     <title></title>
-    <script src="lexer.js">
+    <script src="src/lexer.js">
     </script>
     <script>
         var tokenCount = 0;
         var lexer = new JSLex.Lexer();
-        lexer.init('a := 0 - 2',
+        lexer.init(':=',
                 [
-                    [/./, function() {tokenCount++;}],
-                    [/a/, function(text) {console.log('Found: ' + text);}],
-                    [/[0-9]+/, 'NUMBER'],
-                    [/-/ , 'MINUS' ],
-                    [/\+/, 'PLUS'],
-                    [/[_a-zA-Z][_a-zA-Z0-9]*/, 'ID'],
-                    [/:=/, 'ASSIGN'],
-                    [/\s/, '']
+                    [/:=/, function() {tokenCount++;}],
+                    [/:/, 'ASSIGN']
                 ]
         );
 
+        try {
         console.log(lexer.tokenize());
         console.log(tokenCount);
+        } catch(e) {
+            console.log(e);
+        }
 
     </script>
 </head>

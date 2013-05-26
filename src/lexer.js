@@ -1,5 +1,17 @@
 var JSLex = JSLex || {};
 
+JSLex.ignore = function() {};
+
+JSLex.SyntaxError = function(message) {
+    this.name = "SyntaxError";
+    this.message = message;
+}
+
+JSLex.EndOfFileError = function(message) {
+    this.name = "NoInputError";
+    this.message = message;
+}
+
 JSLex.Lexer = function(){
     var _rules,
         _input;
@@ -9,8 +21,16 @@ JSLex.Lexer = function(){
         _rules = rulesArr;
     }
 
+    var hasMoreTokens = function() {
+        return _input.length > 0;
+    }
+
     var getNextToken = function() {
-        var tempMatch;
+        if (!hasMoreTokens()) {
+            throw new JSLex.EndOfFileError('No more input to consume.');
+        }
+
+        var matchText;
 
         for(var i = 0; i < _rules.length; i++) {
 
@@ -19,45 +39,41 @@ JSLex.Lexer = function(){
 
             var match = regex.exec(_input);
 
-            //if it's a function that has no return value, then keep going through actions. If another rules is found that returns a value,
-            //consume the text then. Otherwise, consume it after exhausting all rules.
-
-            //todo: cover with test
-            //todo: don't repeat input replace so much
-            //todo: introduce a null function called ignore
-
             if (match && match.index === 0) {
-                if (typeof value === 'function') {
-                    var returnValue = value(match[0]);
-                    if (returnValue !== undefined && returnValue !== null) {
-                        _input = _input.replace(match[0], '');
-                        return returnValue;
-                    } else {
-                        tempMatch = match[0];
-                    }
-                } else if (value !== '') {
-                    _input = _input.replace(match[0], '');
+                matchText = match[0];
+
+                if (typeof value !== 'function') {
+                    consume(matchText);
                     return value;
                 } else {
-                    _input = _input.replace(match[0], '');
-                    return getNextToken();
+                    var returnValue = value(match[0]);
+                    if (hasValue(returnValue)) {
+                        consume(matchText);
+                        return returnValue;
+                    }
                 }
             }
 
-            if (i === _rules.length - 1 && tempMatch) {
-                _input = _input.replace(tempMatch, '');
+            var allRulesExhausted = (i === _rules.length - 1);
+            if (allRulesExhausted && matchText) {
+                consume(matchText);
                 return;
             }
         }
 
-        throw "Invalid character: '" + _input[0] + "'";
+
+        throw new JSLex.SyntaxError("Invalid character: '" + _input[0].toString() + "'");
+    }
+
+    var consume = function(match) {
+        _input = _input.replace(match, '');
     }
 
     var tokenize = function() {
         var allTokens = [];
-        while (_input.length > 0) {
+        while (hasMoreTokens()) {
             var token = getNextToken();
-            if (token !== undefined && token !== null) {
+            if (hasValue(token)) {
                 allTokens.push(token);
             }
         }
@@ -65,12 +81,14 @@ JSLex.Lexer = function(){
         return allTokens;
     }
 
-    var ignore = function() {}
+    var hasValue = function(variable) {
+        return typeof variable !== 'undefined' && variable !== null;
+    }
 
     return {
         init: init,
         getNextToken: getNextToken,
         tokenize: tokenize,
-        ignore: ignore
+        hasMoreTokens: hasMoreTokens
     };
 }
