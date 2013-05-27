@@ -1,14 +1,19 @@
 var JSLex = JSLex || {};
 
-JSLex.ignore = function() {};
+JSLex.Ignore = {
+    toString: function() {
+        return 'Ignored token'
+    }
+}
+
+JSLex.EndOfStream = {
+    toString: function() {
+        return "End of stream";
+    }
+}
 
 JSLex.SyntaxError = function(message) {
     this.name = "SyntaxError";
-    this.message = message;
-}
-
-JSLex.EndOfFileError = function(message) {
-    this.name = "NoInputError";
     this.message = message;
 }
 
@@ -21,14 +26,10 @@ JSLex.Lexer = function(){
         _rules = rulesArr;
     }
 
-    var hasMoreTokens = function() {
-        return _input.length > 0;
-    }
-
+    //if rule has no return value, try next rules until a value is returned. If no value is returned,
+    // and no ignore is found, then it's a lex error
     var getNextToken = function() {
-        if (!hasMoreTokens()) {
-            throw new JSLex.EndOfFileError('No more input to consume.');
-        }
+        if (!_input.length) return JSLex.EndOfStream;
 
         var matchText;
 
@@ -42,40 +43,40 @@ JSLex.Lexer = function(){
             if (match && match.index === 0) {
                 matchText = match[0];
 
-                if (typeof value !== 'function') {
-                    consume(matchText);
-                    return value;
-                } else {
+                if (typeof value === 'function') {
                     var returnValue = value(match[0]);
-                    if (hasValue(returnValue)) {
+                    if (returnValue === JSLex.Ignore) {
+                        consume(matchText);
+                        return getNextToken();
+                    } else if (hasValue(returnValue)) {
                         consume(matchText);
                         return returnValue;
                     }
+                } else {
+                    consume(matchText);
+                    if (value === JSLex.Ignore) {
+                        return getNextToken();
+                    } else {
+                        return value;
+                    }
                 }
             }
-
-            var allRulesExhausted = (i === _rules.length - 1);
-            if (allRulesExhausted && matchText) {
-                consume(matchText);
-                return;
-            }
         }
-
 
         throw new JSLex.SyntaxError("Invalid character: '" + _input[0].toString() + "'");
     }
 
+    //todo: consider just moving index instead of actually consuming text
     var consume = function(match) {
         _input = _input.replace(match, '');
     }
 
     var tokenize = function() {
         var allTokens = [];
-        while (hasMoreTokens()) {
-            var token = getNextToken();
-            if (hasValue(token)) {
-                allTokens.push(token);
-            }
+        var token = getNextToken();
+        while (token !== JSLex.EndOfStream) {
+            allTokens.push(token);
+            token = getNextToken();
         }
 
         return allTokens;
@@ -88,7 +89,6 @@ JSLex.Lexer = function(){
     return {
         init: init,
         getNextToken: getNextToken,
-        tokenize: tokenize,
-        hasMoreTokens: hasMoreTokens
+        tokenize: tokenize
     };
 }

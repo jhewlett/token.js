@@ -34,9 +34,41 @@ test("First matching rule has a side effect, second matching rule returns its va
     assertEquals('sideEffect1', capture);
 });
 
-test("ignore is a function on the namespace that returns undefined", function() {
-    assertEquals('function', typeof JSLex.ignore);
-    assertEquals(undefined, JSLex.ignore());
+test("If all remaining text is ignored, getNextToken returns EndOfStream", function() {
+    var lexer = new JSLex.Lexer();
+    lexer.init('  ',
+        [
+            [/\s+/, JSLex.Ignore]
+        ]);
+
+    var token = lexer.getNextToken();
+    assertEquals(JSLex.EndOfStream, token);
+});
+
+test("JSLex.Ignore consumes text but does not return a token", function() {
+    var lexer = new JSLex.Lexer();
+    lexer.init(' +',
+        [
+            [/\s/, JSLex.Ignore],
+            [/\+/, 'PLUS']
+        ]);
+
+    var token = lexer.getNextToken();
+    assertEquals('PLUS', token);
+});
+
+test("Function that returns JSLex.Ignore acts the same as using JSLex.Ignore directly", function() {
+    var numSpaces = 0;
+    var lexer = new JSLex.Lexer();
+    lexer.init(' +',
+        [
+            [/\s/, function() { numSpaces++; return JSLex.Ignore; }],
+            [/\+/, 'PLUS']
+        ]);
+
+    var token = lexer.getNextToken();
+    assertEquals('PLUS', token);
+    assertEquals(1, numSpaces);
 });
 
 test("Tokenize with two tokens", function() {
@@ -49,32 +81,18 @@ test("Tokenize with two tokens", function() {
     assertEquals(['LETTER: a', 'LETTER: b'], lexer.tokenize());
 });
 
-test("Tokenize does not include null or undefined values", function() {
-    var lexer = new JSLex.Lexer();
-    lexer.init('abc',
-        [
-            [/a/, JSLex.ignore],
-            [/b/, null],
-            [/c/, 'C']
-        ]);
-
-    assertEquals(['C'], lexer.tokenize());
-});
-
-test("hasMoreTokens", function() {
-    var lexer = new JSLex.Lexer();
-    lexer.init('ab',
-        [
-            [/a/, JSLex.ignore],
-            [/b/, JSLex.ignore]
-        ]);
-
-    assertTrue(lexer.hasMoreTokens());
-    lexer.getNextToken();
-    assertTrue(lexer.hasMoreTokens());
-    lexer.getNextToken();
-    assertFalse(lexer.hasMoreTokens());
-});
+//todo: is this test irrelevant since everything (except ignore) must return a value now?
+//test("Tokenize does not include null or undefined values", function() {
+//    var lexer = new JSLex.Lexer();
+//    lexer.init('abc',
+//        [
+//            [/a/, undefined],
+//            [/b/, null],
+//            [/c/, 'C']
+//        ]);
+//
+//    assertEquals(['C'], lexer.tokenize());
+//});
 
 test("getNextToken throws NoMatchError if no match found", function() {
     expect(3);
@@ -91,23 +109,6 @@ test("getNextToken throws NoMatchError if no match found", function() {
         assertEquals('SyntaxError', e.name);
         assertTrue(e.message.indexOf('Invalid character') > -1);
         assertTrue(e.message.indexOf("'a'") > -1);
-    }
-});
-
-test("getNextToken throws NoInputError if all input consumed", function() {
-    expect(2);
-
-    var lexer = new JSLex.Lexer();
-    lexer.init('',
-        [
-            [/a/, JSLex.ignore]
-        ]);
-
-    try {
-        lexer.getNextToken();
-    } catch(e) {
-        assertEquals('NoInputError', e.name);
-        assertTrue(e.message.indexOf('No more input') > -1);
     }
 });
 
