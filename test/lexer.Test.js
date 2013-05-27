@@ -81,26 +81,25 @@ test("Tokenize with two tokens", function() {
     assertEquals(['LETTER: a', 'LETTER: b'], lexer.tokenize());
 });
 
-//todo: is this test irrelevant since everything (except ignore) must return a value now?
-//test("Tokenize does not include null or undefined values", function() {
-//    var lexer = new JSLex.Lexer();
-//    lexer.init('abc',
-//        [
-//            [/a/, undefined],
-//            [/b/, null],
-//            [/c/, 'C']
-//        ]);
-//
-//    assertEquals(['C'], lexer.tokenize());
-//});
+test("Tokenize does not include ignored values", function() {
+    var lexer = new JSLex.Lexer();
+    lexer.init('abc',
+        [
+            [/a/, JSLex.Ignore],
+            [/b/, JSLex.Ignore],
+            [/c/, 'C']
+        ]);
+
+    assertEquals(['C'], lexer.tokenize());
+});
 
 test("getNextToken throws NoMatchError if no match found", function() {
-    expect(3);
+    expect(4);
 
     var lexer = new JSLex.Lexer();
     lexer.init('ab',
         [
-            [/b/, JSLex.ignore]
+            [/b/, JSLex.Ignore]
         ]);
 
     try {
@@ -109,8 +108,23 @@ test("getNextToken throws NoMatchError if no match found", function() {
         assertEquals('SyntaxError', e.name);
         assertTrue(e.message.indexOf('Invalid character') > -1);
         assertTrue(e.message.indexOf("'a'") > -1);
+        assertTrue(e.message.indexOf("index 1") > -1);
     }
 });
 
-//todo: is the situation in index.html a bug? How do I handle different matches?
-// Just say that anything that doesn't return a value (eventually) should not consume?
+test("NoMatchError displays the right character", function() {
+    expect(2);
+
+    var lexer = new JSLex.Lexer();
+    lexer.init('ab',
+        [
+            [/a/, JSLex.Ignore]
+        ]);
+
+    try {
+        lexer.getNextToken();
+    } catch(e) {
+        assertTrue(e.message.indexOf("'b'") > -1);
+        assertTrue(e.message.indexOf("index 2") > -1);
+    }
+});

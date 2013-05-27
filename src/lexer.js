@@ -4,41 +4,42 @@ JSLex.Ignore = {
     toString: function() {
         return 'Ignored token'
     }
-}
+};
 
 JSLex.EndOfStream = {
     toString: function() {
         return "End of stream";
     }
-}
+};
 
 JSLex.SyntaxError = function(message) {
     this.name = "SyntaxError";
     this.message = message;
-}
+};
 
 JSLex.Lexer = function(){
     var _rules,
-        _input;
+        _input,
+        _index;
 
     var init = function(input, rulesArr) {
         _input = input;
         _rules = rulesArr;
-    }
+        _index = 0;
+    };
 
     //if rule has no return value, try next rules until a value is returned. If no value is returned,
     // and no ignore is found, then it's a lex error
     var getNextToken = function() {
-        if (!_input.length) return JSLex.EndOfStream;
+        if (_index >= _input.length) return JSLex.EndOfStream;
 
         var matchText;
 
         for(var i = 0; i < _rules.length; i++) {
-
             var regex = _rules[i][0];
             var value = _rules[i][1];
 
-            var match = regex.exec(_input);
+            var match = regex.exec(_input.substring(_index));
 
             if (match && match.index === 0) {
                 matchText = match[0];
@@ -63,13 +64,12 @@ JSLex.Lexer = function(){
             }
         }
 
-        throw new JSLex.SyntaxError("Invalid character: '" + _input[0].toString() + "'");
-    }
+        throw new JSLex.SyntaxError("Invalid character '" + _input[_index] + "' at index " + (_index + 1));
+    };
 
-    //todo: consider just moving index instead of actually consuming text
     var consume = function(match) {
-        _input = _input.replace(match, '');
-    }
+        _index += match.length;
+    };
 
     var tokenize = function() {
         var allTokens = [];
@@ -80,15 +80,15 @@ JSLex.Lexer = function(){
         }
 
         return allTokens;
-    }
+    };
 
     var hasValue = function(variable) {
         return typeof variable !== 'undefined' && variable !== null;
-    }
+    };
 
     return {
         init: init,
         getNextToken: getNextToken,
         tokenize: tokenize
     };
-}
+};
