@@ -1,7 +1,7 @@
-module('All Tests');
+module('Lexer.js');
 
 test("Single token with simple rule returns the value", function() {
-    var lexer = new JSLex.Lexer();
+    var lexer = new TokenJS.Lexer();
     lexer.init('0',
     [
         [/[0-9]/, 'DIGIT']
@@ -11,7 +11,7 @@ test("Single token with simple rule returns the value", function() {
 });
 
 test("Single token with function returns the value of the function", function() {
-    var lexer = new JSLex.Lexer();
+    var lexer = new TokenJS.Lexer();
     lexer.init('a',
         [
             [/a/, function(text) {return text + text;}]
@@ -21,7 +21,7 @@ test("Single token with function returns the value of the function", function() 
 });
 
 test("First matching rule has a side effect, second matching rule returns its value, third matching rule is ignored", function() {
-    var lexer = new JSLex.Lexer();
+    var lexer = new TokenJS.Lexer();
     var capture = '';
     lexer.init('a',
         [
@@ -35,21 +35,21 @@ test("First matching rule has a side effect, second matching rule returns its va
 });
 
 test("If all remaining text is ignored, getNextToken returns EndOfStream", function() {
-    var lexer = new JSLex.Lexer();
+    var lexer = new TokenJS.Lexer();
     lexer.init('  ',
         [
-            [/\s+/, JSLex.Ignore]
+            [/\s+/, TokenJS.Ignore]
         ]);
 
     var token = lexer.getNextToken();
-    assertEquals(JSLex.EndOfStream, token);
+    assertEquals(TokenJS.EndOfStream, token);
 });
 
-test("JSLex.Ignore consumes text but does not return a token", function() {
-    var lexer = new JSLex.Lexer();
+test("TokenJS.Ignore consumes text but does not return a token", function() {
+    var lexer = new TokenJS.Lexer();
     lexer.init(' +',
         [
-            [/\s/, JSLex.Ignore],
+            [/\s/, TokenJS.Ignore],
             [/\+/, 'PLUS']
         ]);
 
@@ -57,12 +57,12 @@ test("JSLex.Ignore consumes text but does not return a token", function() {
     assertEquals('PLUS', token);
 });
 
-test("Function that returns JSLex.Ignore acts the same as using JSLex.Ignore directly", function() {
+test("Function that returns TokenJS.Ignore acts the same as using TokenJS.Ignore directly", function() {
     var numSpaces = 0;
-    var lexer = new JSLex.Lexer();
+    var lexer = new TokenJS.Lexer();
     lexer.init(' +',
         [
-            [/\s/, function() { numSpaces++; return JSLex.Ignore; }],
+            [/\s/, function() { numSpaces++; return TokenJS.Ignore; }],
             [/\+/, 'PLUS']
         ]);
 
@@ -72,21 +72,23 @@ test("Function that returns JSLex.Ignore acts the same as using JSLex.Ignore dir
 });
 
 test("Tokenize with two tokens", function() {
-    var lexer = new JSLex.Lexer();
+    var lexer = new TokenJS.Lexer();
     lexer.init('ab',
         [
-            [/[a-z]/, function(match) {return 'LETTER: ' + match;}]
+            [/[a-z]/, function(match){
+                return 'LETTER: ' + match;
+            }]
         ]);
 
     assertEquals(['LETTER: a', 'LETTER: b'], lexer.tokenize());
 });
 
 test("Tokenize does not include ignored values", function() {
-    var lexer = new JSLex.Lexer();
+    var lexer = new TokenJS.Lexer();
     lexer.init('abc',
         [
-            [/a/, JSLex.Ignore],
-            [/b/, JSLex.Ignore],
+            [/a/, TokenJS.Ignore],
+            [/b/, TokenJS.Ignore],
             [/c/, 'C']
         ]);
 
@@ -96,10 +98,10 @@ test("Tokenize does not include ignored values", function() {
 test("getNextToken throws NoMatchError if no match found", function() {
     expect(4);
 
-    var lexer = new JSLex.Lexer();
+    var lexer = new TokenJS.Lexer();
     lexer.init('ab',
         [
-            [/b/, JSLex.Ignore]
+            [/b/, TokenJS.Ignore]
         ]);
 
     try {
@@ -115,10 +117,10 @@ test("getNextToken throws NoMatchError if no match found", function() {
 test("NoMatchError displays the right character", function() {
     expect(2);
 
-    var lexer = new JSLex.Lexer();
+    var lexer = new TokenJS.Lexer();
     lexer.init('ab',
         [
-            [/a/, JSLex.Ignore]
+            [/a/, TokenJS.Ignore]
         ]);
 
     try {

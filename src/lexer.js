@@ -1,37 +1,37 @@
-var JSLex = JSLex || {};
+var TokenJS = TokenJS || {};
 
-JSLex.Ignore = {
+TokenJS.Ignore = {
     toString: function() {
         return 'Ignored token'
     }
 };
 
-JSLex.EndOfStream = {
+TokenJS.EndOfStream = {
     toString: function() {
-        return "End of stream";
+        return "End of token stream";
     }
 };
 
-JSLex.SyntaxError = function(message) {
+TokenJS.SyntaxError = function(message) {
     this.name = "SyntaxError";
     this.message = message;
 };
 
-JSLex.Lexer = function(){
+TokenJS.Lexer = function(){
     var _rules,
         _input,
         _index;
 
-    var init = function(input, rulesArr) {
+    var init = function(input, rules) {
         _input = input;
-        _rules = rulesArr;
+        _rules = rules;
         _index = 0;
     };
 
     //if rule has no return value, try next rules until a value is returned. If no value is returned,
     // and no ignore is found, then it's a lex error
     var getNextToken = function() {
-        if (_index >= _input.length) return JSLex.EndOfStream;
+        if (_index >= _input.length) return TokenJS.EndOfStream;
 
         var matchText;
 
@@ -46,7 +46,7 @@ JSLex.Lexer = function(){
 
                 if (typeof value === 'function') {
                     var returnValue = value(match[0]);
-                    if (returnValue === JSLex.Ignore) {
+                    if (returnValue === TokenJS.Ignore) {
                         consume(matchText);
                         return getNextToken();
                     } else if (hasValue(returnValue)) {
@@ -55,7 +55,7 @@ JSLex.Lexer = function(){
                     }
                 } else {
                     consume(matchText);
-                    if (value === JSLex.Ignore) {
+                    if (value === TokenJS.Ignore) {
                         return getNextToken();
                     } else {
                         return value;
@@ -64,7 +64,7 @@ JSLex.Lexer = function(){
             }
         }
 
-        throw new JSLex.SyntaxError("Invalid character '" + _input[_index] + "' at index " + (_index + 1));
+        throw new TokenJS.SyntaxError("Invalid character '" + _input[_index] + "' at index " + (_index + 1));
     };
 
     var consume = function(match) {
@@ -74,7 +74,7 @@ JSLex.Lexer = function(){
     var tokenize = function() {
         var allTokens = [];
         var token = getNextToken();
-        while (token !== JSLex.EndOfStream) {
+        while (token !== TokenJS.EndOfStream) {
             allTokens.push(token);
             token = getNextToken();
         }

@@ -2,24 +2,45 @@
 <html>
 <head>
     <title></title>
+    <script id='text' type='text/plain'>
+        class Calculator
+        start = 5
+
+        # my cool function
+        def add(y)
+        start + y
+        end
+
+        def sub(y)
+        start - y
+        end
+
+        def newStart(val)
+        start = val
+        end
+        end
+    </script>
     <script src="src/lexer.js">
     </script>
     <script>
         var tokenCount = 0;
-        var lexer = new JSLex.Lexer();
-        lexer.init(':=',
+        var lexer = new TokenJS.Lexer();
+        lexer.init('num := 3 + 4 #add the numbers',
                 [
-                    [/:=/, function() {tokenCount++;}],
-                    [/:/, 'ASSIGN']
+                    [/#.*/, TokenJS.Ignore],
+                    [/\s+/, TokenJS.Ignore],
+                    [/./, function () {
+                        tokenCount++;
+                    }],
+                    [/[a-zA-Z]+/, 'VAR'],
+                    [/[0-9]+/, 'NUMBER'],
+                    [/:=/, 'ASSIGN'],
+                    [/\+/, 'PLUS']
                 ]
         );
 
-        try {
-            console.log(lexer.tokenize());
-            console.log(tokenCount);
-        } catch(e) {
-            console.log(e);
-        }
+        console.log(lexer.tokenize());
+        console.log("Number of tokens: " + tokenCount);
 
     </script>
 </head>
