@@ -7,7 +7,7 @@ test("Single token with simple rule returns the value", function() {
         [/[0-9]/, 'DIGIT']
     ]);
 
-    assertEquals('DIGIT', lexer.getNextToken());
+    assertEquals({text: '0', token: 'DIGIT'}, lexer.getNextToken());
 });
 
 test("Single token with function returns the value of the function", function() {
@@ -17,7 +17,7 @@ test("Single token with function returns the value of the function", function() 
             [/a/, function(text) {return text + text;}]
         ]);
 
-    assertEquals('aa', lexer.getNextToken());
+    assertEquals({text: 'a', token: 'aa'}, lexer.getNextToken());
 });
 
 test("First matching rule has a side effect, second matching rule returns its value, third matching rule is ignored", function() {
@@ -30,7 +30,7 @@ test("First matching rule has a side effect, second matching rule returns its va
             [/./, function() { capture = 'sideEffect2'; }]
         ]);
 
-    assertEquals('LETTER', lexer.getNextToken());
+    assertEquals({text: 'a', token: 'LETTER'}, lexer.getNextToken());
     assertEquals('sideEffect1', capture);
 });
 
@@ -54,7 +54,7 @@ test("TokenJS.Ignore consumes text but does not return a token", function() {
         ]);
 
     var token = lexer.getNextToken();
-    assertEquals('PLUS', token);
+    assertEquals({text: '+', token: 'PLUS'}, token);
 });
 
 test("Function that returns TokenJS.Ignore acts the same as using TokenJS.Ignore directly", function() {
@@ -67,7 +67,7 @@ test("Function that returns TokenJS.Ignore acts the same as using TokenJS.Ignore
         ]);
 
     var token = lexer.getNextToken();
-    assertEquals('PLUS', token);
+    assertEquals({text: '+', token: 'PLUS'}, token);
     assertEquals(1, numSpaces);
 });
 
@@ -80,7 +80,7 @@ test("Tokenize with two tokens", function() {
             }]
         ]);
 
-    assertEquals(['LETTER: a', 'LETTER: b'], lexer.tokenize());
+    assertEquals([{text: 'a', token: 'LETTER: a'}, {text: 'b', token: 'LETTER: b'}], lexer.tokenize());
 });
 
 test("Tokenize does not include ignored values", function() {
@@ -92,7 +92,7 @@ test("Tokenize does not include ignored values", function() {
             [/c/, 'C']
         ]);
 
-    assertEquals(['C'], lexer.tokenize());
+    assertEquals([{text: 'c', token: 'C'}], lexer.tokenize());
 });
 
 test("getNextToken throws NoMatchError if no match found", function() {

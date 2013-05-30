@@ -2,7 +2,7 @@ var TokenJS = TokenJS || {};
 
 TokenJS.Ignore = {
     toString: function() {
-        return 'Ignored token'
+        return 'Ignored rule'
     }
 };
 
@@ -28,8 +28,6 @@ TokenJS.Lexer = function(){
         _index = 0;
     };
 
-    //if rule has no return value, try next rules until a value is returned. If no value is returned,
-    // and no ignore is found, then it's a lex error
     var getNextToken = function() {
         if (_index >= _input.length) return TokenJS.EndOfStream;
 
@@ -45,20 +43,20 @@ TokenJS.Lexer = function(){
                 matchText = match[0];
 
                 if (typeof value === 'function') {
-                    var returnValue = value(match[0]);
+                    var returnValue = value(matchText);
                     if (returnValue === TokenJS.Ignore) {
                         consume(matchText);
                         return getNextToken();
                     } else if (hasValue(returnValue)) {
                         consume(matchText);
-                        return returnValue;
+                        return {text: matchText, token: returnValue};
                     }
                 } else {
                     consume(matchText);
                     if (value === TokenJS.Ignore) {
                         return getNextToken();
                     } else {
-                        return value;
+                        return {text: matchText, token: value};
                     }
                 }
             }
