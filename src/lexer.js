@@ -70,6 +70,7 @@ TokenJS.Lexer = function(){
     };
 
     var tokenize = function() {
+        _index = 0;
         var allTokens = [];
         var token = getNextToken();
         while (token !== TokenJS.EndOfStream) {

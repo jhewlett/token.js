@@ -95,6 +95,18 @@ test("Tokenize does not include ignored values", function() {
     assertEquals([{text: 'c', token: 'C'}], lexer.tokenize());
 });
 
+test("Tokenize resets the index", function() {
+    var lexer = new TokenJS.Lexer();
+    lexer.init('a',
+        [
+            [/a/, 'A']
+        ]);
+
+    lexer.getNextToken();
+
+    assertEquals([{text: 'a', token: 'A'}], lexer.tokenize());
+});
+
 test("getNextToken throws NoMatchError if no match found", function() {
     expect(4);
 
