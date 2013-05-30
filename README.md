@@ -29,7 +29,7 @@ console.log("Number of tokens: " + tokenCount);
 This outputs the following:
 
 ```
-["VAR", "ASSIGN", "NUMBER", "PLUS", "NUMBER"]
+[{text: "num", token: "VAR"}, {text: ":=", token: "ASSIGN"}, {text: "3", token: "NUMBER"}, {text: "+", token: "PLUS"}, {text: "4", token: "NUMBER"}]
 Number of tokens: 5 
 ```
 
@@ -53,4 +53,12 @@ getNextToken
 ------------
 
 To get tokens one at a time, call ```getNextToken```. When all input is exhausted, ```getNextToken``` will return ```TokenJS.EndOfStream```.
+
+```javascript
+var token = getNextToken();
+while (token !== TokenJS.EndOfStream) {
+  console.log(token);
+  token = getNextToken();
+}
+```
 
