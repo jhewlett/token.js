@@ -29,7 +29,8 @@ console.log("Number of tokens: " + tokenCount);
 This outputs the following:
 
 ```
-[{text: "num", token: "VAR"}, {text: ":=", token: "ASSIGN"}, {text: "3", token: "NUMBER"}, {text: "+", token: "PLUS"}, {text: "4", token: "NUMBER"}]
+[{text: "num", token: "VAR"}, {text: ":=", token: "ASSIGN"}, {text: "3", token: "NUMBER"},
+ {text: "+", token: "PLUS"}, {text: "4", token: "NUMBER"}]
 Number of tokens: 5 
 ```
 
