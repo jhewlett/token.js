@@ -211,6 +211,30 @@ test("Switching states", function() {
     assertEquals([{text: 'a', token: 'A'}, {text: 'b', token: 'B'}], lexer.tokenize());
 });
 
+test("Switching states to handle comments", function() {
+    var lexer = new TokenJS.Lexer();
+    lexer.init('before<!-- consumed-text with before and after and -- dashes -->after',
+        {
+            root: [
+                [/before/, 'BEFORE'],
+                [/after/, 'AFTER'],
+                [/<!--/, function() {
+                    this.state('comment');
+                    return TokenJS.Ignore;
+                }]
+            ],
+            comment: [
+                [/-->/, function() {
+                    this.state('root');
+                    return TokenJS.Ignore;
+                }],
+                [/./, TokenJS.Ignore]
+            ]
+        });
+
+    assertEquals([{text: 'before', token: 'BEFORE'}, {text: 'after', token: 'AFTER'}], lexer.tokenize());
+});
+
 test("Switching states without returning a token is a syntax error.", function() {
     expect(3);
 
