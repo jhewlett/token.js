@@ -2,7 +2,7 @@ var TokenJS = TokenJS || {};
 
 TokenJS.Ignore = {
     toString: function() {
-        return 'Ignored rule'
+        return 'Ignored rule';
     }
 };
 
@@ -18,24 +18,29 @@ TokenJS.SyntaxError = function(message) {
 };
 
 TokenJS.Lexer = function(){
-    var _rules,
-        _input,
-        _index;
+    var _rules;
+    var _currentState;
+    var _input;
+    var _index;
 
     var init = function(input, rules) {
         _input = input;
+        _currentState = 'root';
         _rules = rules;
         _index = 0;
     };
 
     var getNextToken = function() {
-        if (_index >= _input.length) return TokenJS.EndOfStream;
+        if (_index >= _input.length) {
+            return TokenJS.EndOfStream;
+        }
 
         var matchText;
+        var currentRules = _rules[_currentState];
 
-        for(var i = 0; i < _rules.length; i++) {
-            var regex = _rules[i][0];
-            var value = _rules[i][1];
+        for(var i = 0; i < currentRules.length; i++) {
+            var regex = currentRules[i][0];
+            var value = currentRules[i][1];
 
             var match = regex.exec(_input.substring(_index));
 
@@ -43,13 +48,15 @@ TokenJS.Lexer = function(){
                 matchText = match[0];
 
                 if (typeof value === 'function') {
-                    var returnValue = value(matchText);
+                    var returnValue = value.call(callbackContext, matchText);
                     if (returnValue === TokenJS.Ignore) {
                         consume(matchText);
                         return getNextToken();
                     } else if (hasValue(returnValue)) {
                         consume(matchText);
                         return {text: matchText, token: returnValue};
+                    } else if (changedStateWithoutReturningToken(currentRules)) {
+                        throwSyntaxError();
                     }
                 } else {
                     consume(matchText);
@@ -62,7 +69,19 @@ TokenJS.Lexer = function(){
             }
         }
 
+        throwSyntaxError();
+    };
+
+    var changedStateWithoutReturningToken = function(currentRules) {
+        return _rules[_currentState] !== currentRules;
+    };
+
+    var throwSyntaxError = function() {
         throw new TokenJS.SyntaxError("Invalid character '" + _input[_index] + "' at index " + (_index + 1));
+    };
+
+    var state = function(newState) {
+        _currentState = newState;
     };
 
     var consume = function(match) {
@@ -85,9 +104,14 @@ TokenJS.Lexer = function(){
         return typeof variable !== 'undefined' && variable !== null;
     };
 
+    var callbackContext = {
+        state: state
+    };
+
     return {
         init: init,
         getNextToken: getNextToken,
-        tokenize: tokenize
+        tokenize: tokenize,
+        state: state
     };
 };
