@@ -17,6 +17,11 @@ TokenJS.SyntaxError = function(message) {
     this.message = message;
 };
 
+TokenJS.StateError = function(message) {
+    this.name = "StateError";
+    this.message = message;
+};
+
 TokenJS.Lexer = function(){
     var _rules;
     var _currentState;
@@ -25,9 +30,9 @@ TokenJS.Lexer = function(){
 
     var init = function(input, rules) {
         _input = input;
-        _currentState = 'root';
         _rules = rules;
         _index = 0;
+        state('root');
     };
 
     var getNextToken = function() {
@@ -81,6 +86,9 @@ TokenJS.Lexer = function(){
     };
 
     var state = function(newState) {
+        if (!_rules.hasOwnProperty(newState)) {
+            throw new TokenJS.StateError("Missing state: '" + newState + "'.");
+        }
         _currentState = newState;
     };
 
@@ -88,8 +96,12 @@ TokenJS.Lexer = function(){
         _index += match.length;
     };
 
-    var tokenize = function() {
+    var reset = function() {
         _index = 0;
+    };
+
+    var tokenize = function() {
+        reset();
         var allTokens = [];
         var token = getNextToken();
         while (token !== TokenJS.EndOfStream) {
@@ -112,6 +124,7 @@ TokenJS.Lexer = function(){
         init: init,
         getNextToken: getNextToken,
         tokenize: tokenize,
-        state: state
+        state: state,
+        reset: reset
     };
 };

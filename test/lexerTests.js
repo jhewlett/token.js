@@ -176,15 +176,14 @@ test("Two different states, does not match rule from another state", function() 
     expect(1);
 
     var lexer = new TokenJS.Lexer();
-    lexer.init('a',
-        {
-            root: [
-                [/[0-9]/, 'DIGIT']
-            ],
-            secondary: [
-                [/a/, 'A']
-            ]
-        });
+    lexer.init('a', {
+        root: [
+            [/[0-9]/, 'DIGIT']
+        ],
+        secondary: [
+            [/a/, 'A']
+        ]
+    });
 
     try {
         lexer.getNextToken();
@@ -195,42 +194,40 @@ test("Two different states, does not match rule from another state", function() 
 
 test("Switching states", function() {
     var lexer = new TokenJS.Lexer();
-    lexer.init('ab',
-        {
-            root: [
-                [/a/, function() {
-                    this.state('secondary');
-                    return 'A';
-                }]
-            ],
-            secondary: [
-                [/b/, 'B']
-            ]
-        });
+    lexer.init('ab', {
+        root: [
+            [/a/, function() {
+                this.state('secondary');
+                return 'A';
+            }]
+        ],
+        secondary: [
+            [/b/, 'B']
+        ]
+    });
 
     assertEquals([{text: 'a', token: 'A'}, {text: 'b', token: 'B'}], lexer.tokenize());
 });
 
 test("Switching states to handle comments", function() {
     var lexer = new TokenJS.Lexer();
-    lexer.init('before<!-- consumed-text with before and after and -- dashes -->after',
-        {
-            root: [
-                [/before/, 'BEFORE'],
-                [/after/, 'AFTER'],
-                [/<!--/, function() {
-                    this.state('comment');
-                    return TokenJS.Ignore;
-                }]
-            ],
-            comment: [
-                [/-->/, function() {
-                    this.state('root');
-                    return TokenJS.Ignore;
-                }],
-                [/./, TokenJS.Ignore]
-            ]
-        });
+    lexer.init('before<!-- consumed-text with before and after and -- dashes -->after', {
+        root: [
+            [/before/, 'BEFORE'],
+            [/after/, 'AFTER'],
+            [/<!--/, function() {
+                this.state('comment');
+                return TokenJS.Ignore;
+            }]
+        ],
+        comment: [
+            [/-->/, function() {
+                this.state('root');
+                return TokenJS.Ignore;
+            }],
+            [/./, TokenJS.Ignore]
+        ]
+    });
 
     assertEquals([{text: 'before', token: 'BEFORE'}, {text: 'after', token: 'AFTER'}], lexer.tokenize());
 });
@@ -258,4 +255,40 @@ test("Switching states without returning a token is a syntax error.", function()
         assertTrue(e.message.indexOf('Invalid character') > -1);
         assertTrue(e.message.indexOf("'a'") > -1);
     }
+});
+
+test("switching to a state that doesn't exist throws a state error", function() {
+    expect(2);
+    var lexer = new TokenJS.Lexer();
+
+    try {
+        lexer.init('a', {
+            root: [
+                [/a/, 'A']
+            ]
+        });
+
+        lexer.state('none');
+    } catch(e) {
+        assertEquals('StateError', e.name);
+        assertTrue(e.message.indexOf("Missing state: 'none'") > -1);
+    }
+});
+
+
+module('reset');
+
+test('reset sets the index back to 0', function() {
+   var lexer = new TokenJS.Lexer();
+    lexer.init('ab', {
+        root: [
+            [/a/, 'A']
+        ]
+    });
+
+    var expected = {text: 'a', token: 'A'};
+
+    assertEquals(expected, lexer.getNextToken());
+    lexer.reset();
+    assertEquals(expected, lexer.getNextToken());
 });
