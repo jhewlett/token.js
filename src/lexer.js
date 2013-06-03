@@ -120,6 +120,7 @@ TokenJS.Lexer = function(){
 
     var reset = function() {
         _index = 0;
+        _currentState = 'root';
     };
 
     var tokenize = function() {

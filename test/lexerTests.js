@@ -287,11 +287,17 @@ test("switching to a state that doesn't exist throws a state error", function() 
 
 module('reset');
 
-test('reset sets the index back to 0', function() {
+test('reset sets the index back to 0 and changes to the root state', function() {
    var lexer = new TokenJS.Lexer();
     lexer.init('ab', {
         root: [
-            [/a/, 'A']
+            [/a/, function() {
+                this.state('second');
+                return 'A';
+            }]
+        ],
+        second: [
+            [/b/, 'B']
         ]
     });
 
