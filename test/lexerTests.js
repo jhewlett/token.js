@@ -85,8 +85,7 @@ test("Function that returns TokenJS.Ignore acts the same as using TokenJS.Ignore
     assertEquals(1, numSpaces);
 });
 
-
-test("getNextToken throws NoMatchError if no match found", function () {
+ test("getNextToken throws NoMatchError if no match found", function () {
     expect(4);
 
     var lexer = new TokenJS.Lexer();
@@ -106,7 +105,7 @@ test("getNextToken throws NoMatchError if no match found", function () {
     }
 });
 
-test("NoMatchError displays the right character", function () {
+test("NoMatchError displays the right character and index", function () {
     expect(2);
 
     var lexer = new TokenJS.Lexer();
@@ -165,9 +164,20 @@ test("Tokenize resets the index", function () {
 
     lexer.getNextToken();
 
-    assertEquals([
-        {text: 'a', token: 'A'}
-    ], lexer.tokenize());
+    assertEquals([{text: 'a', token: 'A'}], lexer.tokenize());
+});
+
+test("Lexer picks the rule with the longest match (maximal munch)", function () {
+    var lexer = new TokenJS.Lexer();
+    lexer.init('var variant', {
+        root: [
+            [/\s+/, TokenJS.Ignore],
+            [/var/, 'VAR'],
+            [/[a-z]+/, 'ID']
+        ]
+    });
+
+    assertEquals([{text: 'var', token: 'VAR'}, {text: 'variant', token: 'ID'}], lexer.tokenize());
 });
 
 module('state');
@@ -274,7 +284,6 @@ test("switching to a state that doesn't exist throws a state error", function() 
         assertTrue(e.message.indexOf("Missing state: 'none'") > -1);
     }
 });
-
 
 module('reset');
 

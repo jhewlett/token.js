@@ -40,36 +40,29 @@ TokenJS.Lexer = function(){
             return TokenJS.EndOfStream;
         }
 
-        var matchText;
-        var currentRules = _rules[_currentState];
+        var oldState = _currentState;
 
-        for(var i = 0; i < currentRules.length; i++) {
-            var regex = currentRules[i][0];
-            var value = currentRules[i][1];
+        var allMatches = getAllMatches();
 
-            var match = regex.exec(_input.substring(_index));
-
-            if (match && match.index === 0) {
-                matchText = match[0];
-
-                if (typeof value === 'function') {
-                    var returnValue = value.call(callbackContext, matchText);
-                    if (returnValue === TokenJS.Ignore) {
-                        consume(matchText);
-                        return getNextToken();
-                    } else if (hasValue(returnValue)) {
-                        consume(matchText);
-                        return {text: matchText, token: returnValue};
-                    } else if (changedStateWithoutReturningToken(currentRules)) {
-                        throwSyntaxError();
-                    }
+        for (var i = 0; i < allMatches.length; i++) {
+            var bestMatch = allMatches[i];
+            if (typeof bestMatch.value === 'function') {
+                var returnValue = bestMatch.value.call(callbackContext, bestMatch.matchText);
+                if (returnValue === TokenJS.Ignore) {
+                    consume(bestMatch.matchText);
+                    return getNextToken();
+                } else if (hasValue(returnValue)) {
+                    consume(bestMatch.matchText);
+                    return {text: bestMatch.matchText, token: returnValue};
+                } else if (changedStateWithoutReturningToken(oldState)) {
+                    throwSyntaxError();
+                }
+            } else {
+                consume(bestMatch.matchText);
+                if (bestMatch.value === TokenJS.Ignore) {
+                    return getNextToken();
                 } else {
-                    consume(matchText);
-                    if (value === TokenJS.Ignore) {
-                        return getNextToken();
-                    } else {
-                        return {text: matchText, token: value};
-                    }
+                    return {text: bestMatch.matchText, token: bestMatch.value};
                 }
             }
         }
@@ -77,8 +70,37 @@ TokenJS.Lexer = function(){
         throwSyntaxError();
     };
 
-    var changedStateWithoutReturningToken = function(currentRules) {
-        return _rules[_currentState] !== currentRules;
+    var getAllMatches = function () {
+        var allMatches = [];
+
+        var currentRules = _rules[_currentState];
+        for (var i = 0; i < currentRules.length; i++) {
+            var regex = currentRules[i][0];
+
+            var match = regex.exec(_input.substring(_index));
+
+            if (match && match.index === 0) {
+                allMatches.push({matchText: match[0], value: currentRules[i][1]});
+            }
+        }
+        sortByLongestMatchDescending(allMatches);
+
+        return allMatches;
+    };
+
+    var sortByLongestMatchDescending = function(allMatches) {
+        allMatches.sort(function (a, b) {
+            if (a.matchText.length < b.matchText.length) {
+                return 1;
+            } else if (a.matchText.length > b.matchText.length) {
+                return -1;
+            }
+            return 0;
+        });
+    };
+
+    var changedStateWithoutReturningToken = function(oldState) {
+        return _currentState !== oldState;
     };
 
     var throwSyntaxError = function() {
