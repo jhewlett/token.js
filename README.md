@@ -6,16 +6,16 @@ Token.js is a simple lexer written in JavaScript. You specify rules with regular
 Example usage:
 
 ```javascript
-var tokenCount = 0;
+var numIDs = 0;
 var lexer = new TokenJS.Lexer();
 lexer.init('num := 3 + 4 #add the numbers', {
   root: [
     [/#.*/, TokenJS.Ignore],  //ignore comments
     [/\s+/, TokenJS.Ignore],  //ignore whitespace
-    [/./, function (match) {  //increment a variable, then continue matching with other rules
-      tokenCount++;
+    [/[a-zA-Z]+/, function() {
+      numIDs++;     //perform a side-effect
+      return 'ID';
     }],
-    [/[a-zA-Z]+/, 'VAR'],
     [/[0-9]+/, 'NUMBER'],
     [/:=/, 'ASSIGN'],
     [/\+/, 'PLUS']
@@ -23,7 +23,7 @@ lexer.init('num := 3 + 4 #add the numbers', {
 });
 
 console.log(lexer.tokenize());
-console.log("Number of tokens: " + tokenCount);
+console.log("Identifiers: " + numIDs);
 ```
 
 This outputs the following:
@@ -31,7 +31,7 @@ This outputs the following:
 ```javascript
 [{text: "num", token: "VAR"}, {text: ":=", token: "ASSIGN"}, {text: "3", token: "NUMBER"},
  {text: "+", token: "PLUS"}, {text: "4", token: "NUMBER"}]
-Number of tokens: 5 
+Identifiers: 1  
 ```
 
 init
@@ -43,9 +43,9 @@ The first argument to ```init``` is the input text. The second is an object cons
 
 As the example above illustrates, use ```TokenJS.Ignore``` to indicate that characters should be consumed without producing a token. This is useful for discarding whitespace and comments.
 
-A custom function takes the matched text as a parameter. The return value of the function will be the token. If a function does not return a value, as in the example above, then the lexer will go through the rest of the rules for the current state until it either 1) finds a value and returns that as a token, 2) ```TokenJS.Ignore``` is encountered, or 3) the rules are exhausted, in which case a syntax error will be thrown.
+A custom function takes the matched text as a parameter. The return value of the function will be the token. If a function does not return a value, as in the example above, then the lexer will consider the rest of the rules for the current state until it either 1) finds a value and returns that as a token, 2) ```TokenJS.Ignore``` is encountered, or 3) the rules are exhausted, in which case a syntax error will be thrown.
 
-Rules are matched in order, without regard to the length of a match.
+In the case of multiple matches, the rule producing the longest match will be taken. If there is a tie for longest match, the first rule will be used.
 
 tokenize
 --------
@@ -94,3 +94,14 @@ lexer.init('before<!-- consumed-text with before and after and -- dashes -->afte
   ]
 });
 ```
+
+Output:
+
+```javascript
+[{text: 'before', token: 'BEFORE'}, {text: 'after', token: 'AFTER'}]
+```
+
+reset
+-------
+
+Use the `reset` method to reset the lexer to the `root` state and start scanning from the beginning. This is called implicitly whenever you call `tokenize`.
