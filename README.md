@@ -14,7 +14,7 @@ lexer.init('num := 3 + 4 #add the numbers', {
     [/\s+/, TokenJS.Ignore],  //ignore whitespace
     [/[a-zA-Z]+/, function() {
       numIDs++;     //perform a side-effect
-    	return 'ID'
+      return 'ID';
     }],
     [/[0-9]+/, 'NUMBER'],
     [/:=/, 'ASSIGN'],
