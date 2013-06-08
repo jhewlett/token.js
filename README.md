@@ -7,8 +7,7 @@ Example usage:
 
 ```javascript
 var numIDs = 0;
-var lexer = new TokenJS.Lexer();
-lexer.init('num := 3 + 4 #add the numbers', {
+var lexer = new TokenJS.Lexer('num := 3 + 4 #add the numbers', {
   root: [
     [/#.*/, TokenJS.Ignore],  //ignore comments
     [/\s+/, TokenJS.Ignore],  //ignore whitespace
@@ -34,10 +33,10 @@ This outputs the following:
 Identifiers: 1  
 ```
 
-init
+constructor
 ----
 
-The first argument to ```init``` is the input text. The second is an object consisting of arrays of rules. Each rule is a tuple consisting of a regular expression followed by either a token, a function to execute, or ```TokenJS.Ignore```.
+The first argument to the constructor is the input text. The second is an object consisting of arrays of rules. Each rule is a tuple consisting of a regular expression followed by either a token, a function to execute, or ```TokenJS.Ignore```.
 
 `root` is a required rule set and indicates the default state of the lexer. Additional rules may be added as needed. See `state` below for instructions on switching states.
 
@@ -75,8 +74,8 @@ To change the state of the lexer, call `this.state` in your callback function, p
 Here is an example of using states to handle HTML comments:
 
 ```javascript
-var lexer = new TokenJS.Lexer();
-lexer.init('before<!-- consumed-text with before and after and -- dashes -->after', {
+var lexer = new TokenJS.Lexer(
+  'before<!-- consumed-text with before and after and -- dashes -->after', {
   root: [
     [/before/, 'BEFORE'],
     [/after/, 'AFTER'],
