@@ -22,18 +22,20 @@ TokenJS.StateError = function(message) {
     this.message = message;
 };
 
-TokenJS.Lexer = function(){
-    var _rules;
+TokenJS.Lexer = function(input, rules){
+    var _rules = rules;
     var _currentState;
-    var _input;
-    var _index;
+    var _input = input;
+    var _index = 0;
 
-    var init = function(input, rules) {
-        _input = input;
-        _rules = rules;
-        _index = 0;
-        state('root');
+    var state = function(newState) {
+        if (!_rules.hasOwnProperty(newState)) {
+            throw new TokenJS.StateError("Missing state: '" + newState + "'.");
+        }
+        _currentState = newState;
     };
+
+    state('root');
 
     var getNextToken = function() {
         if (_index >= _input.length) {
@@ -107,13 +109,6 @@ TokenJS.Lexer = function(){
         throw new TokenJS.SyntaxError("Invalid character '" + _input[_index] + "' at index " + (_index + 1));
     };
 
-    var state = function(newState) {
-        if (!_rules.hasOwnProperty(newState)) {
-            throw new TokenJS.StateError("Missing state: '" + newState + "'.");
-        }
-        _currentState = newState;
-    };
-
     var consume = function(match) {
         _index += match.length;
     };
@@ -144,7 +139,6 @@ TokenJS.Lexer = function(){
     };
 
     return {
-        init: init,
         getNextToken: getNextToken,
         tokenize: tokenize,
         state: state,

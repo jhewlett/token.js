@@ -1,8 +1,7 @@
 module('getNextToken');
 
 test("Single token with simple rule returns the value", function () {
-    var lexer = new TokenJS.Lexer();
-    lexer.init('0', {
+    var lexer = new TokenJS.Lexer('0', {
         root: [
             [/[0-9]/, 'DIGIT']
     ]});
@@ -11,8 +10,7 @@ test("Single token with simple rule returns the value", function () {
 });
 
 test("Single token with function returns the value of the function", function () {
-    var lexer = new TokenJS.Lexer();
-    lexer.init('a', {
+    var lexer = new TokenJS.Lexer('a', {
         root: [
             [/a/, function (text) {
                 return text + text;
@@ -24,9 +22,8 @@ test("Single token with function returns the value of the function", function ()
 });
 
 test("First matching rule has a side effect, second matching rule returns its value, third matching rule is ignored", function () {
-    var lexer = new TokenJS.Lexer();
     var capture = '';
-    lexer.init('a', {
+    var lexer = new TokenJS.Lexer('a', {
         root: [
             [/./, function () {
                 capture = 'sideEffect1';
@@ -43,8 +40,7 @@ test("First matching rule has a side effect, second matching rule returns its va
 });
 
 test("If all remaining text is ignored, getNextToken returns EndOfStream", function () {
-    var lexer = new TokenJS.Lexer();
-    lexer.init('  ', {
+    var lexer = new TokenJS.Lexer('  ', {
         root: [
             [/\s+/, TokenJS.Ignore]
         ]
@@ -55,8 +51,7 @@ test("If all remaining text is ignored, getNextToken returns EndOfStream", funct
 });
 
 test("TokenJS.Ignore consumes text but does not return a token", function () {
-    var lexer = new TokenJS.Lexer();
-    lexer.init(' +', {
+    var lexer = new TokenJS.Lexer(' +', {
         root: [
             [/\s/, TokenJS.Ignore],
             [/\+/, 'PLUS']
@@ -69,8 +64,7 @@ test("TokenJS.Ignore consumes text but does not return a token", function () {
 
 test("Function that returns TokenJS.Ignore acts the same as using TokenJS.Ignore directly", function () {
     var numSpaces = 0;
-    var lexer = new TokenJS.Lexer();
-    lexer.init(' +', {
+    var lexer = new TokenJS.Lexer(' +', {
         root: [
             [/\s/, function () {
                 numSpaces++;
@@ -88,8 +82,7 @@ test("Function that returns TokenJS.Ignore acts the same as using TokenJS.Ignore
  test("getNextToken throws NoMatchError if no match found", function () {
     expect(4);
 
-    var lexer = new TokenJS.Lexer();
-    lexer.init('ab', {
+    var lexer = new TokenJS.Lexer('ab', {
         root: [
             [/b/, TokenJS.Ignore]
         ]
@@ -108,8 +101,7 @@ test("Function that returns TokenJS.Ignore acts the same as using TokenJS.Ignore
 test("NoMatchError displays the right character and index", function () {
     expect(2);
 
-    var lexer = new TokenJS.Lexer();
-    lexer.init('ab', {
+    var lexer = new TokenJS.Lexer('ab', {
         root: [
             [/a/, TokenJS.Ignore]
         ]
@@ -126,8 +118,7 @@ test("NoMatchError displays the right character and index", function () {
 module('tokenize');
 
 test("Tokenize with two tokens", function () {
-    var lexer = new TokenJS.Lexer();
-    lexer.init('ab', {
+    var lexer = new TokenJS.Lexer('ab', {
         root: [
             [/[a-z]/, function (match) {
                 return 'LETTER: ' + match;
@@ -142,8 +133,7 @@ test("Tokenize with two tokens", function () {
 });
 
 test("Tokenize does not include ignored values", function () {
-    var lexer = new TokenJS.Lexer();
-    lexer.init('abc', {
+    var lexer = new TokenJS.Lexer('abc', {
         root: [
             [/a/, TokenJS.Ignore],
             [/b/, TokenJS.Ignore],
@@ -155,8 +145,7 @@ test("Tokenize does not include ignored values", function () {
 });
 
 test("Tokenize resets the index", function () {
-    var lexer = new TokenJS.Lexer();
-    lexer.init('a', {
+    var lexer = new TokenJS.Lexer('a', {
         root: [
             [/a/, 'A']
         ]
@@ -168,8 +157,7 @@ test("Tokenize resets the index", function () {
 });
 
 test("Lexer picks the rule with the longest match (maximal munch)", function () {
-    var lexer = new TokenJS.Lexer();
-    lexer.init('var variant', {
+    var lexer = new TokenJS.Lexer('var variant', {
         root: [
             [/\s+/, TokenJS.Ignore],
             [/var/, 'VAR'],
@@ -185,8 +173,7 @@ module('state');
 test("Two different states, does not match rule from another state", function() {
     expect(1);
 
-    var lexer = new TokenJS.Lexer();
-    lexer.init('a', {
+    var lexer = new TokenJS.Lexer('a', {
         root: [
             [/[0-9]/, 'DIGIT']
         ],
@@ -203,8 +190,7 @@ test("Two different states, does not match rule from another state", function() 
 });
 
 test("Switching states", function() {
-    var lexer = new TokenJS.Lexer();
-    lexer.init('ab', {
+    var lexer = new TokenJS.Lexer('ab', {
         root: [
             [/a/, function() {
                 this.state('secondary');
@@ -220,8 +206,7 @@ test("Switching states", function() {
 });
 
 test("Switching states to handle comments", function() {
-    var lexer = new TokenJS.Lexer();
-    lexer.init('before<!-- consumed-text with before and after and -- dashes -->after', {
+    var lexer = new TokenJS.Lexer('before<!-- consumed-text with before and after and -- dashes -->after', {
         root: [
             [/before/, 'BEFORE'],
             [/after/, 'AFTER'],
@@ -245,9 +230,7 @@ test("Switching states to handle comments", function() {
 test("Switching states without returning a token is a syntax error.", function() {
     expect(3);
 
-    var lexer = new TokenJS.Lexer();
-    lexer.init('a',
-        {
+    var lexer = new TokenJS.Lexer('a', {
             root: [
                 [/a/, function() {
                     this.state('secondary');
@@ -269,10 +252,9 @@ test("Switching states without returning a token is a syntax error.", function()
 
 test("switching to a state that doesn't exist throws a state error", function() {
     expect(2);
-    var lexer = new TokenJS.Lexer();
 
     try {
-        lexer.init('a', {
+        var lexer = new TokenJS.Lexer('a', {
             root: [
                 [/a/, 'A']
             ]
@@ -288,8 +270,7 @@ test("switching to a state that doesn't exist throws a state error", function() 
 module('reset');
 
 test('reset sets the index back to 0 and changes to the root state', function() {
-   var lexer = new TokenJS.Lexer();
-    lexer.init('ab', {
+   var lexer = new TokenJS.Lexer('ab', {
         root: [
             [/a/, function() {
                 this.state('second');
