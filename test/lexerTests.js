@@ -6,7 +6,7 @@ test("Single token with simple rule returns the value", function () {
             [/[0-9]/, 'DIGIT']
     ]});
 
-    assertEquals({text: '0', token: 'DIGIT'}, lexer.getNextToken());
+    assertEquals({text: '0', token: 'DIGIT', index: 0}, lexer.getNextToken());
 });
 
 test("Single token with function returns the value of the function", function () {
@@ -18,7 +18,7 @@ test("Single token with function returns the value of the function", function ()
         ]
     });
 
-    assertEquals({text: 'a', token: 'aa'}, lexer.getNextToken());
+    assertEquals({text: 'a', token: 'aa', index: 0}, lexer.getNextToken());
 });
 
 test("First matching rule has a side effect, second matching rule returns its value, third matching rule is ignored", function () {
@@ -35,7 +35,7 @@ test("First matching rule has a side effect, second matching rule returns its va
         ]
     });
 
-    assertEquals({text: 'a', token: 'LETTER'}, lexer.getNextToken());
+    assertEquals({text: 'a', token: 'LETTER', index: 0}, lexer.getNextToken());
     assertEquals('sideEffect1', capture);
 });
 
@@ -59,7 +59,7 @@ test("TokenJS.Ignore consumes text but does not return a token", function () {
     });
 
     var token = lexer.getNextToken();
-    assertEquals({text: '+', token: 'PLUS'}, token);
+    assertEquals({text: '+', token: 'PLUS', index: 1}, token);
 });
 
 test("Function that returns TokenJS.Ignore acts the same as using TokenJS.Ignore directly", function () {
@@ -75,7 +75,7 @@ test("Function that returns TokenJS.Ignore acts the same as using TokenJS.Ignore
     });
 
     var token = lexer.getNextToken();
-    assertEquals({text: '+', token: 'PLUS'}, token);
+    assertEquals({text: '+', token: 'PLUS', index: 1}, token);
     assertEquals(1, numSpaces);
 });
 
@@ -127,8 +127,8 @@ test("Tokenize with two tokens", function () {
     });
 
     assertEquals([
-        {text: 'a', token: 'LETTER: a'},
-        {text: 'b', token: 'LETTER: b'}
+        {text: 'a', token: 'LETTER: a', index: 0},
+        {text: 'b', token: 'LETTER: b', index: 1}
     ], lexer.tokenize());
 });
 
@@ -141,7 +141,7 @@ test("Tokenize does not include ignored values", function () {
         ]
     });
 
-    assertEquals([{text: 'c', token: 'C'}], lexer.tokenize());
+    assertEquals([{text: 'c', token: 'C', index: 2}], lexer.tokenize());
 });
 
 test("Tokenize resets the index", function () {
@@ -153,7 +153,7 @@ test("Tokenize resets the index", function () {
 
     lexer.getNextToken();
 
-    assertEquals([{text: 'a', token: 'A'}], lexer.tokenize());
+    assertEquals([{text: 'a', token: 'A', index: 0}], lexer.tokenize());
 });
 
 test("Lexer picks the rule with the longest match (maximal munch)", function () {
@@ -165,7 +165,7 @@ test("Lexer picks the rule with the longest match (maximal munch)", function () 
         ]
     });
 
-    assertEquals([{text: 'var', token: 'VAR'}, {text: 'variant', token: 'ID'}], lexer.tokenize());
+    assertEquals([{text: 'var', token: 'VAR', index: 0}, {text: 'variant', token: 'ID', index: 4}], lexer.tokenize());
 });
 
 module('state');
@@ -202,7 +202,7 @@ test("Switching states", function() {
         ]
     });
 
-    assertEquals([{text: 'a', token: 'A'}, {text: 'b', token: 'B'}], lexer.tokenize());
+    assertEquals([{text: 'a', token: 'A', index: 0}, {text: 'b', token: 'B', index: 1}], lexer.tokenize());
 });
 
 test("Switching states to handle comments", function() {
@@ -224,7 +224,7 @@ test("Switching states to handle comments", function() {
         ]
     });
 
-    assertEquals([{text: 'before', token: 'BEFORE'}, {text: 'after', token: 'AFTER'}], lexer.tokenize());
+    assertEquals([{text: 'before', token: 'BEFORE', index: 0}, {text: 'after', token: 'AFTER', index: 64}], lexer.tokenize());
 });
 
 test("Switching states without returning a token is a syntax error.", function() {
@@ -282,7 +282,7 @@ test('reset sets the index back to 0 and changes to the root state', function() 
         ]
     });
 
-    var expected = {text: 'a', token: 'A'};
+    var expected = {text: 'a', token: 'A', index: 0};
 
     assertEquals(expected, lexer.getNextToken());
     lexer.reset();

@@ -55,7 +55,7 @@ TokenJS.Lexer = function(input, rules){
                     return getNextToken();
                 } else if (hasValue(returnValue)) {
                     consume(bestMatch.matchText);
-                    return {text: bestMatch.matchText, token: returnValue};
+                    return {text: bestMatch.matchText, token: returnValue, index: bestMatch.index};
                 } else if (changedStateWithoutReturningToken(oldState)) {
                     throwSyntaxError();
                 }
@@ -64,7 +64,7 @@ TokenJS.Lexer = function(input, rules){
                 if (bestMatch.value === TokenJS.Ignore) {
                     return getNextToken();
                 } else {
-                    return {text: bestMatch.matchText, token: bestMatch.value};
+                    return {text: bestMatch.matchText, token: bestMatch.value, index: bestMatch.index};
                 }
             }
         }
@@ -82,7 +82,7 @@ TokenJS.Lexer = function(input, rules){
             var match = regex.exec(_input.substring(_index));
 
             if (match && match.index === 0) {
-                allMatches.push({matchText: match[0], value: currentRules[i][1]});
+                allMatches.push({matchText: match[0], value: currentRules[i][1], index: _index});
             }
         }
         sortByLongestMatchDescending(allMatches);
