@@ -28,8 +28,9 @@ console.log("Identifiers: " + numIDs);
 This outputs the following:
 
 ```javascript
-[{text: "num", token: "VAR"}, {text: ":=", token: "ASSIGN"}, {text: "3", token: "NUMBER"},
- {text: "+", token: "PLUS"}, {text: "4", token: "NUMBER"}]
+[{text: "num", token: "VAR", index: 0}, {text: ":=", token: "ASSIGN", index: 4},
+ {text: "3", token: "NUMBER", index: 7}, {text: "+", token: "PLUS", index: 9},
+ {text: "4", token: "NUMBER", index: 11}]
 Identifiers: 1  
 ```
 
@@ -97,7 +98,7 @@ var lexer = new TokenJS.Lexer(
 Output:
 
 ```javascript
-[{text: 'before', token: 'BEFORE'}, {text: 'after', token: 'AFTER'}]
+[{text: 'before', token: 'BEFORE', index: 0}, {text: 'after', token: 'AFTER', index: 64}]
 ```
 
 reset
