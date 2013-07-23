@@ -98,6 +98,17 @@ test("Function that returns TokenJS.Ignore acts the same as using TokenJS.Ignore
     }
 });
 
+test("getNextToken does not throw NoMatchError if 'ignoreAllUnrecognized' is true", function () {
+    var lexer = new TokenJS.Lexer('ab', {
+        root: [
+            [/b/, 'B']
+        ]
+    }, true);
+
+    var token = lexer.getNextToken();
+    assertEquals({text: 'b', token: 'B', index: 1}, token);
+});
+
 test("NoMatchError displays the right character and index", function () {
     expect(2);
 

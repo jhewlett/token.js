@@ -22,11 +22,17 @@ TokenJS.StateError = function(message) {
     this.message = message;
 };
 
-TokenJS.Lexer = function(input, rules){
+/**
+ * @param input: text to lex
+ * @param rules: dictionary of lexing rules. Must contain a 'root' state.
+ * @param ignoreAllUnrecognized: if true, ignores unrecognized characters instead of throwing an error
+ */
+ TokenJS.Lexer = function(input, rules, ignoreUnrecognized){
     var _rules = rules;
     var _currentState;
     var _input = input;
     var _index = 0;
+    var _ignoreUnrecognized = ignoreUnrecognized;
 
     var state = function(newState) {
         if (!_rules.hasOwnProperty(newState)) {
@@ -69,7 +75,12 @@ TokenJS.Lexer = function(input, rules){
             }
         }
 
-        throwSyntaxError();
+        if (_ignoreUnrecognized) {
+            _index += 1;
+            return getNextToken();
+        } else {
+            throwSyntaxError();
+        }
     };
 
     var getAllMatches = function () {
