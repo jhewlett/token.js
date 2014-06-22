@@ -61,10 +61,10 @@ getNextToken
 To get tokens one at a time, call ```getNextToken```. When all input is exhausted, ```getNextToken``` will return ```TokenJS.EndOfStream```.
 
 ```javascript
-var token = getNextToken();
+var token = lexer.getNextToken();
 while (token !== TokenJS.EndOfStream) {
   console.log(token);
-  token = getNextToken();
+  token = lexer.getNextToken();
 }
 ```
 
